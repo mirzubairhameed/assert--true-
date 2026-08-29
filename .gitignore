@@ -52,3 +52,20 @@ prompt
 server.log
 # Skills directory
 /skills/
+# sandbox / local artifacts — never push
+.env
+.env.local
+.zscripts/
+db/
+download/
+upload/
+tool-results/
+tests/
+examples/
+mini-services/
+worklog.md
+dev.log
+server.log
+verify-*.png
+Caddyfile
+agent-ctx/
