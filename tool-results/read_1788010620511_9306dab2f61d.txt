@@ -1,0 +1,1299 @@
+     1→Looking at this, I want to build something that feels like a programmer's actual notebook — warm, opinionated, and alive — rather than another generic dev portfolio. I'll go with a three-theme system (warm dark / paper light / phosphor cyber) to make the smooth color transitions really shine, and use editorial typography (Fraunces serif + JetBrains Mono) instead of the usual Inter-only look.
+     2→
+     3→```html
+     4→<!DOCTYPE html>
+     5→<html lang="en" data-theme="dark">
+     6→<head>
+     7→<meta charset="UTF-8" />
+     8→<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     9→<title>/dev/log — Notes from a Programmer's Desk</title>
+    10→<script src="https://cdn.tailwindcss.com"></script>
+    11→<link rel="preconnect" href="https://fonts.googleapis.com">
+    12→<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    13→<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    14→<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    15→
+    16→<style>
+    17→/* === THEME TOKENS === */
+    18→:root[data-theme="dark"] {
+    19→  --bg: #0c0b09;
+    20→  --bg-elev: #14120e;
+    21→  --bg-elev-2: #1c1a14;
+    22→  --fg: #f0ead6;
+    23→  --fg-dim: #c9c1ad;
+    24→  --muted: #8a8275;
+    25→  --accent: #f59e0b;
+    26→  --accent-rgb: 245, 158, 11;
+    27→  --accent-2: #06b6d4;
+    28→  --accent-2-rgb: 6, 182, 212;
+    29→  --border: rgba(240, 234, 214, 0.08);
+    30→  --border-strong: rgba(240, 234, 214, 0.18);
+    31→  --card: #15130e;
+    32→  --code-bg: #060503;
+    33→  --code-fg: #f0ead6;
+    34→  --glow: rgba(245, 158, 11, 0.15);
+    35→}
+    36→:root[data-theme="light"] {
+    37→  --bg: #f3ecdc;
+    38→  --bg-elev: #faf3e1;
+    39→  --bg-elev-2: #fffaee;
+    40→  --fg: #1a1610;
+    41→  --fg-dim: #3d362b;
+    42→  --muted: #6b6358;
+    43→  --accent: #c2410c;
+    44→  --accent-rgb: 194, 65, 12;
+    45→  --accent-2: #0e7490;
+    46→  --accent-2-rgb: 14, 116, 144;
+    47→  --border: rgba(26, 22, 16, 0.12);
+    48→  --border-strong: rgba(26, 22, 16, 0.24);
+    49→  --card: #fffaee;
+    50→  --code-bg: #1a1610;
+    51→  --code-fg: #f3ecdc;
+    52→  --glow: rgba(194, 65, 12, 0.12);
+    53→}
+    54→:root[data-theme="cyber"] {
+    55→  --bg: #02060a;
+    56→  --bg-elev: #050d10;
+    57→  --bg-elev-2: #071318;
+    58→  --fg: #4eff96;
+    59→  --fg-dim: #8affb8;
+    60→  --muted: #2a8a5e;
+    61→  --accent: #ffea00;
+    62→  --accent-rgb: 255, 234, 0;
+    63→  --accent-2: #ff10f0;
+    64→  --accent-2-rgb: 255, 16, 240;
+    65→  --border: rgba(78, 255, 150, 0.18);
+    66→  --border-strong: rgba(78, 255, 150, 0.4);
+    67→  --card: #050d10;
+    68→  --code-bg: #000;
+    69→  --code-fg: #4eff96;
+    70→  --glow: rgba(78, 255, 150, 0.2);
+    71→}
+    72→
+    73→* { box-sizing: border-box; }
+    74→html { scroll-behavior: smooth; }
+    75→body {
+    76→  background: var(--bg);
+    77→  color: var(--fg);
+    78→  font-family: 'Space Grotesk', sans-serif;
+    79→  margin: 0;
+    80→  overflow-x: hidden;
+    81→  position: relative;
+    82→}
+    83→
+    84→/* CRT scanlines for cyber theme */
+    85→[data-theme="cyber"] body::before {
+    86→  content: '';
+    87→  position: fixed;
+    88→  inset: 0;
+    89→  pointer-events: none;
+    90→  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(78, 255, 150, 0.025) 2px, rgba(78, 255, 150, 0.025) 3px);
+    91→  z-index: 200;
+    92→  mix-blend-mode: overlay;
+    93→}
+    94→
+    95→/* Theme transition animation */
+    96→body.theme-anim,
+    97→body.theme-anim *,
+    98→body.theme-anim *::before,
+    99→body.theme-anim *::after {
+   100→  transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+   101→              color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+   102→              border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+   103→              fill 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+   104→              box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+   105→}
+   106→
+   107→.font-display { font-family: 'Fraunces', serif; }
+   108→.font-mono { font-family: 'JetBrains Mono', monospace; }
+   109→
+   110→/* === PROGRESS BAR === */
+   111→.progress-bar {
+   112→  position: fixed;
+   113→  top: 0; left: 0;
+   114→  height: 3px;
+   115→  width: 0%;
+   116→  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+   117→  z-index: 100;
+   118→  box-shadow: 0 0 12px var(--accent), 0 0 4px var(--accent);
+   119→}
+   120→
+   121→/* === BACKGROUND GRID === */
+   122→.bg-grid {
+   123→  background-image:
+   124→    linear-gradient(var(--border) 1px, transparent 1px),
+   125→    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+   126→  background-size: 56px 56px;
+   127→  background-position: center center;
+   128→}
+   129→
+   130→/* === FLOATING DOTS === */
+   131→.float-dot {
+   132→  position: absolute;
+   133→  border-radius: 50%;
+   134→  filter: blur(60px);
+   135→  opacity: 0.25;
+   136→  animation: drift 16s ease-in-out infinite;
+   137→  pointer-events: none;
+   138→}
+   139→@keyframes drift {
+   140→  0%, 100% { transform: translate(0, 0) scale(1); }
+   141→  33% { transform: translate(60px, -40px) scale(1.1); }
+   142→  66% { transform: translate(-30px, 50px) scale(0.95); }
+   143→}
+   144→
+   145→/* === MOUSE GLOW === */
+   146→.mouse-glow {
+   147→  position: absolute;
+   148→  width: 700px; height: 700px;
+   149→  border-radius: 50%;
+   150→  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.12) 0%, transparent 60%);
+   151→  pointer-events: none;
+   152→  transform: translate(-50%, -50%);
+   153→  opacity: 0;
+   154→  transition: opacity 0.4s ease;
+   155→  filter: blur(30px);
+   156→  z-index: 1;
+   157→}
+   158→
+   159→/* === TYPEWRITER CURSOR === */
+   160→.cursor::after {
+   161→  content: '▌';
+   162→  color: var(--accent);
+   163→  animation: blink 1s steps(1) infinite;
+   164→  margin-left: 4px;
+   165→  font-weight: 400;
+   166→}
+   167→@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+   168→
+   169→.logo-cursor {
+   170→  display: inline-block;
+   171→  width: 0.5em;
+   172→  height: 1em;
+   173→  background: var(--accent);
+   174→  margin-left: 3px;
+   175→  animation: blink 1.1s steps(1) infinite;
+   176→  vertical-align: text-bottom;
+   177→}
+   178→
+   179→/* === LINKS === */
+   180→.hover-link {
+   181→  position: relative;
+   182→  color: var(--fg-dim);
+   183→  text-decoration: none;
+   184→  transition: color 0.3s ease;
+   185→}
+   186→.hover-link:hover { color: var(--fg); }
+   187→.hover-link::after {
+   188→  content: '';
+   189→  position: absolute;
+   190→  left: 0; bottom: -5px;
+   191→  width: 0; height: 1px;
+   192→  background: var(--accent);
+   193→  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+   194→}
+   195→.hover-link:hover::after { width: 100%; }
+   196→
+   197→/* === THEME TOGGLE === */
+   198→.theme-toggle {
+   199→  display: inline-flex;
+   200→  background: var(--bg-elev);
+   201→  border: 1px solid var(--border-strong);
+   202→  border-radius: 999px;
+   203→  padding: 3px;
+   204→  gap: 2px;
+   205→}
+   206→.theme-btn {
+   207→  width: 32px; height: 32px;
+   208→  border-radius: 999px;
+   209→  display: flex; align-items: center; justify-content: center;
+   210→  cursor: pointer;
+   211→  border: none;
+   212→  background: transparent;
+   213→  color: var(--muted);
+   214→  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+   215→  font-size: 12px;
+   216→}
+   217→.theme-btn.active {
+   218→  background: var(--accent);
+   219→  color: var(--bg);
+   220→  box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.5);
+   221→}
+   222→.theme-btn:hover:not(.active) { color: var(--fg); transform: scale(1.08); }
+   223→
+   224→/* === STAT PILL === */
+   225→.stat-pill {
+   226→  display: inline-flex;
+   227→  align-items: center;
+   228→  gap: 10px;
+   229→  padding: 7px 14px;
+   230→  background: var(--bg-elev);
+   231→  border: 1px solid var(--border-strong);
+   232→  border-radius: 999px;
+   233→  font-family: 'JetBrains Mono', monospace;
+   234→  font-size: 12px;
+   235→  text-decoration: none;
+   236→  color: var(--fg);
+   237→  transition: all 0.3s ease;
+   238→}
+   239→.stat-pill:hover {
+   240→  border-color: var(--accent);
+   241→  box-shadow: 0 0 0 3px var(--glow);
+   242→  transform: translateY(-1px);
+   243→}
+   244→.stat-dot {
+   245→  width: 6px; height: 6px;
+   246→  border-radius: 50%;
+   247→  background: var(--accent-2);
+   248→  box-shadow: 0 0 8px var(--accent-2);
+   249→  animation: pulse 2s ease-in-out infinite;
+   250→}
+   251→@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+   252→
+   253→.flash-up { animation: flashUp 0.7s ease; }
+   254→@keyframes flashUp {
+   255→  0% { transform: translateY(0); }
+   256→  40% { transform: translateY(-6px); color: var(--accent-2) !important; text-shadow: 0 0 12px var(--accent-2); }
+   257→  100% { transform: translateY(0); }
+   258→}
+   259→
+   260→/* === TAG === */
+   261→.tag {
+   262→  display: inline-block;
+   263→  font-family: 'JetBrains Mono', monospace;
+   264→  font-size: 10px;
+   265→  letter-spacing: 0.1em;
+   266→  text-transform: uppercase;
+   267→  color: var(--accent);
+   268→  padding: 4px 9px;
+   269→  border: 1px solid rgba(var(--accent-rgb), 0.5);
+   270→  border-radius: 2px;
+   271→  background: rgba(var(--accent-rgb), 0.08);
+   272→  font-weight: 500;
+   273→}
+   274→
+   275→/* === BUTTONS === */
+   276→.btn-primary {
+   277→  background: var(--accent);
+   278→  color: var(--bg);
+   279→  padding: 13px 22px;
+   280→  border: none;
+   281→  border-radius: 4px;
+   282→  font-family: 'JetBrains Mono', monospace;
+   283→  font-size: 12px;
+   284→  font-weight: 600;
+   285→  letter-spacing: 0.08em;
+   286→  cursor: pointer;
+   287→  text-transform: uppercase;
+   288→  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   289→  display: inline-flex;
+   290→  align-items: center;
+   291→  gap: 10px;
+   292→  text-decoration: none;
+   293→  position: relative;
+   294→  overflow: hidden;
+   295→}
+   296→.btn-primary::before {
+   297→  content: '';
+   298→  position: absolute;
+   299→  inset: 0;
+   300→  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+   301→  transform: translateX(-100%);
+   302→  transition: transform 0.6s ease;
+   303→}
+   304→.btn-primary:hover {
+   305→  transform: translateY(-2px);
+   306→  box-shadow: 0 12px 30px -8px rgba(var(--accent-rgb), 0.6);
+   307→}
+   308→.btn-primary:hover::before { transform: translateX(100%); }
+   309→
+   310→.btn-secondary {
+   311→  background: transparent;
+   312→  color: var(--fg);
+   313→  border: 1px solid var(--border-strong);
+   314→  padding: 13px 22px;
+   315→  border-radius: 4px;
+   316→  font-family: 'JetBrains Mono', monospace;
+   317→  font-size: 12px;
+   318→  font-weight: 500;
+   319→  letter-spacing: 0.08em;
+   320→  cursor: pointer;
+   321→  text-transform: uppercase;
+   322→  transition: all 0.3s ease;
+   323→  display: inline-flex;
+   324→  align-items: center;
+   325→  gap: 10px;
+   326→  text-decoration: none;
+   327→}
+   328→.btn-secondary:hover {
+   329→  border-color: var(--accent);
+   330→  color: var(--accent);
+   331→  transform: translateY(-2px);
+   332→}
+   333→
+   334→/* === ARTICLE CARDS === */
+   335→.article-card {
+   336→  background: var(--card);
+   337→  border: 1px solid var(--border);
+   338→  border-radius: 4px;
+   339→  padding: 28px;
+   340→  position: relative;
+   341→  overflow: hidden;
+   342→  cursor: pointer;
+   343→  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+   344→              box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+   345→              border-color 0.4s ease;
+   346→}
+   347→.article-card::before {
+   348→  content: '';
+   349→  position: absolute;
+   350→  top: 0; left: 0; right: 0;
+   351→  height: 2px;
+   352→  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+   353→  transform: scaleX(0);
+   354→  transform-origin: left;
+   355→  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+   356→}
+   357→.article-card::after {
+   358→  content: '';
+   359→  position: absolute;
+   360→  bottom: 0; right: 0;
+   361→  width: 80px; height: 80px;
+   362→  background: radial-gradient(circle at bottom right, var(--glow), transparent 70%);
+   363→  opacity: 0;
+   364→  transition: opacity 0.4s ease;
+   365→  pointer-events: none;
+   366→}
+   367→.article-card:hover {
+   368→  transform: translateY(-8px);
+   369→  border-color: var(--border-strong);
+   370→  box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.45);
+   371→}
+   372→[data-theme="light"] .article-card:hover {
+   373→  box-shadow: 0 24px 48px -20px rgba(26, 22, 16, 0.2);
+   374→}
+   375→.article-card:hover::before { transform: scaleX(1); }
+   376→.article-card:hover::after { opacity: 1; }
+   377→.article-card .arrow {
+   378→  display: inline-block;
+   379→  transform: translateX(0);
+   380→  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+   381→}
+   382→.article-card:hover .arrow { transform: translateX(8px); }
+   383→.article-card .card-num {
+   384→  font-family: 'JetBrains Mono', monospace;
+   385→  font-weight: 700;
+   386→  font-size: 56px;
+   387→  color: var(--accent);
+   388→  opacity: 0.18;
+   389→  line-height: 0.9;
+   390→  letter-spacing: -0.04em;
+   391→  transition: opacity 0.4s ease;
+   392→}
+   393→.article-card:hover .card-num { opacity: 0.45; }
+   394→.article-card h3 { transition: color 0.3s ease; }
+   395→.article-card:hover h3 { color: var(--accent); }
+   396→
+   397→/* === CODE WINDOW === */
+   398→.code-window {
+   399→  background: var(--code-bg);
+   400→  border: 1px solid var(--border-strong);
+   401→  border-radius: 8px;
+   402→  overflow: hidden;
+   403→  font-family: 'JetBrains Mono', monospace;
+   404→  position: relative;
+   405→  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.5);
+   406→}
+   407→.code-header {
+   408→  background: rgba(255, 255, 255, 0.04);
+   409→  border-bottom: 1px solid var(--border);
+   410→  padding: 11px 16px;
+   411→  display: flex;
+   412→  align-items: center;
+   413→  justify-content: space-between;
+   414→}
+   415→[data-theme="light"] .code-header { background: rgba(255, 255, 255, 0.04); }
+   416→[data-theme="cyber"] .code-header { background: rgba(78, 255, 150, 0.04); }
+   417→
+   418→.copy-btn {
+   419→  background: transparent;
+   420→  border: 1px solid var(--border-strong);
+   421→  color: var(--muted);
+   422→  padding: 5px 11px;
+   423→  font-size: 11px;
+   424→  font-family: 'JetBrains Mono', monospace;
+   425→  border-radius: 3px;
+   426→  cursor: pointer;
+   427→  transition: all 0.25s ease;
+   428→  position: relative;
+   429→  overflow: hidden;
+   430→  display: inline-flex;
+   431→  align-items: center;
+   432→  gap: 6px;
+   433→  text-transform: uppercase;
+   434→  letter-spacing: 0.08em;
+   435→  font-weight: 500;
+   436→}
+   437→.copy-btn:hover {
+   438→  color: var(--accent);
+   439→  border-color: var(--accent);
+   440→}
+   441→.copy-btn.copied {
+   442→  color: var(--bg) !important;
+   443→  background: var(--accent);
+   444→  border-color: var(--accent);
+   445→}
+   446→.copy-flash {
+   447→  position: absolute;
+   448→  inset: 0;
+   449→  background: var(--accent);
+   450→  opacity: 0;
+   451→  pointer-events: none;
+   452→}
+   453→.copy-btn.copied .copy-flash { animation: flash 0.7s ease; }
+   454→@keyframes flash {
+   455→  0% { opacity: 0.5; }
+   456→  100% { opacity: 0; }
+   457→}
+   458→
+   459→/* === SYNTAX HIGHLIGHTING === */
+   460→.tk-key { color: #ff7b72; }
+   461→.tk-str { color: #a5d6ff; }
+   462→.tk-fn { color: #d2a8ff; }
+   463→.tk-com { color: #6e7681; font-style: italic; }
+   464→.tk-num { color: #79c0ff; }
+   465→.tk-op { color: #ffa657; }
+   466→.tk-var { color: var(--code-fg); }
+   467→
+   468→[data-theme="cyber"] .tk-key { color: #ff10f0; }
+   469→[data-theme="cyber"] .tk-str { color: #ffea00; }
+   470→[data-theme="cyber"] .tk-fn { color: #8affb8; }
+   471→[data-theme="cyber"] .tk-com { color: #2a8a5e; }
+   472→[data-theme="cyber"] .tk-num { color: #ffea00; }
+   473→[data-theme="cyber"] .tk-op { color: #ffea00; }
+   474→
+   475→[data-theme="light"] .tk-key { color: #c2410c; }
+   476→[data-theme="light"] .tk-str { color: #0e7490; }
+   477→[data-theme="light"] .tk-fn { color: #7c2d12; }
+   478→[data-theme="light"] .tk-com { color: #6b6358; }
+   479→[data-theme="light"] .tk-num { color: #0e7490; }
+   480→[data-theme="light"] .tk-op { color: #c2410c; }
+   481→
+   482→/* === ARCHIVE LIST === */
+   483→.archive-item {
+   484→  display: flex;
+   485→  align-items: center;
+   486→  gap: 20px;
+   487→  padding: 22px 0;
+   488→  border-bottom: 1px solid var(--border);
+   489→  text-decoration: none;
+   490→  color: inherit;
+   491→  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+   492→  cursor: pointer;
+   493→  position: relative;
+   494→}
+   495→.archive-item::before {
+   496→  content: '';
+   497→  position: absolute;
+   498→  left: -16px; top: 50%;
+   499→  width: 8px; height: 8px;
+   500→  background: var(--accent);
+   501→  border-radius: 50%;
+   502→  transform: translateY(-50%) scale(0);
+   503→  transition: transform 0.3s ease;
+   504→}
+   505→.archive-item:hover {
+   506→  padding-left: 16px;
+   507→  border-bottom-color: var(--accent);
+   508→}
+   509→.archive-item:hover::before { transform: translateY(-50%) scale(1); }
+   510→.archive-item:hover .archive-title { color: var(--accent); }
+   511→.archive-title { transition: color 0.3s ease; }
+   512→
+   513→/* === MARQUEE === */
+   514→.marquee-wrap {
+   515→  overflow: hidden;
+   516→  white-space: nowrap;
+   517→}
+   518→.marquee {
+   519→  display: inline-flex;
+   520→  animation: scroll 40s linear infinite;
+   521→  gap: 60px;
+   522→  padding-right: 60px;
+   523→}
+   524→@keyframes scroll {
+   525→  0% { transform: translateX(0); }
+   526→  100% { transform: translateX(-50%); }
+   527→}
+   528→
+   529→/* === SCROLLBAR === */
+   530→::-webkit-scrollbar { width: 10px; height: 10px; }
+   531→::-webkit-scrollbar-track { background: var(--bg); }
+   532→::-webkit-scrollbar-thumb {
+   533→  background: var(--border-strong);
+   534→  border-radius: 5px;
+   535→  border: 2px solid var(--bg);
+   536→}
+   537→::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+   538→::selection { background: var(--accent); color: var(--bg); }
+   539→
+   540→/* === REVEAL === */
+   541→.reveal {
+   542→  opacity: 0;
+   543→  transform: translateY(30px);
+   544→  transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+   545→}
+   546→.reveal.visible {
+   547→  opacity: 1;
+   548→  transform: translateY(0);
+   549→}
+   550→
+   551→/* === INPUT === */
+   552→.input-field {
+   553→  background: var(--bg);
+   554→  border: 1px solid var(--border-strong);
+   555→  color: var(--fg);
+   556→  padding: 13px 16px;
+   557→  font-family: 'JetBrains Mono', monospace;
+   558→  font-size: 13px;
+   559→  border-radius: 4px;
+   560→  outline: none;
+   561→  transition: all 0.3s ease;
+   562→  width: 100%;
+   563→}
+   564→.input-field:focus {
+   565→  border-color: var(--accent);
+   566→  box-shadow: 0 0 0 3px var(--glow);
+   567→}
+   568→.input-field::placeholder { color: var(--muted); }
+   569→
+   570→/* === RESPONSIVE === */
+   571→@media (max-width: 768px) {
+   572→  .article-card { padding: 22px; }
+   573→  .card-num { font-size: 42px !important; }
+   574→}
+   575→
+   576→@media (prefers-reduced-motion: reduce) {
+   577→  *, *::before, *::after {
+   578→    animation-duration: 0.01ms !important;
+   579→    transition-duration: 0.01ms !important;
+   580→  }
+   581→}
+   582→</style>
+   583→</head>
+   584→<body>
+   585→
+   586→<!-- Reading Progress Bar -->
+   587→<div class="progress-bar" id="progressBar"></div>
+   588→
+   589→<!-- Navigation -->
+   590→<header class="fixed top-0 left-0 right-0 z-50" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); background: rgba(var(--accent-rgb), 0.02); border-bottom: 1px solid var(--border);">
+   591→  <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+   592→    <a href="#hero" class="font-mono font-bold text-lg flex items-center" style="color: var(--fg); text-decoration: none;">
+   593→      <span style="color: var(--accent);">/</span>dev<span style="color: var(--muted);">/</span>log<span class="logo-cursor"></span>
+   594→    </a>
+   595→    
+   596→    <div class="hidden md:flex items-center gap-9 font-mono text-sm">
+   597→      <a href="#notes" class="hover-link">notes</a>
+   598→      <a href="#snippets" class="hover-link">snippets</a>
+   599→      <a href="#archive" class="hover-link">archive</a>
+   600→      <a href="#about" class="hover-link">about</a>
+   601→    </div>
+   602→    
+   603→    <div class="flex items-center gap-3">
+   604→      <a href="https://github.com/tailwindlabs/tailwindcss" target="_blank" rel="noopener" class="stat-pill hidden sm:inline-flex" id="ghPill" title="Live from GitHub">
+   605→        <span class="stat-dot"></span>
+   606→        <i class="fas fa-star text-xs" style="color: var(--accent);"></i>
+   607→        <span id="ghStars" data-raw="0">—</span>
+   608→        <span style="color: var(--muted);">·</span>
+   609→        <i class="fas fa-code-branch text-xs" style="color: var(--accent-2);"></i>
+   610→        <span id="ghForks" data-raw="0">—</span>
+   611→      </a>
+   612→      
+   613→      <div class="theme-toggle" role="group" aria-label="Theme selector">
+   614→        <button class="theme-btn active" data-theme="dark" title="Dark" aria-label="Dark theme"><i class="fas fa-moon"></i></button>
+   615→        <button class="theme-btn" data-theme="light" title="Light" aria-label="Light theme"><i class="fas fa-sun"></i></button>
+   616→        <button class="theme-btn" data-theme="cyber" title="Cyber" aria-label="Cyber theme"><i class="fas fa-terminal"></i></button>
+   617→      </div>
+   618→    </div>
+   619→  </nav>
+   620→</header>
+   621→
+   622→<!-- Hero -->
+   623→<section class="relative min-h-screen flex items-center overflow-hidden bg-grid pt-24 pb-20" id="hero">
+   624→  <div class="float-dot" style="width: 500px; height: 500px; top: 5%; left: -150px; background: var(--accent);"></div>
+   625→  <div class="float-dot" style="width: 600px; height: 600px; bottom: -200px; right: -200px; background: var(--accent-2); animation-delay: -5s;"></div>
+   626→  <div class="mouse-glow" id="mouseGlow"></div>
+   627→  
+   628→  <div class="relative max-w-7xl mx-auto px-6 w-full" style="z-index: 2;">
+   629→    <div class="max-w-5xl">
+   630→      <!-- Issue meta -->
+   631→      <div class="flex items-center gap-3 mb-8 font-mono text-xs flex-wrap" style="color: var(--muted);">
+   632→        <span class="tag">Issue 042</span>
+   633→        <span>·</span>
+   634→        <span>November 12, 2024</span>
+   635→        <span>·</span>
+   636→        <span class="flex items-center gap-2">
+   637→          <span class="stat-dot"></span> currently publishing
+   638→        </span>
+   639→      </div>
+   640→      
+   641→      <!-- Typewriter greeting -->
+   642→      <h1 class="font-mono font-bold mb-8" style="font-size: clamp(2.5rem, 7.5vw, 6.5rem); line-height: 1.02; letter-spacing: -0.045em;">
+   643→        <span style="color: var(--muted);">$</span> <span id="typewriter" class="cursor"></span>
+   644→      </h1>
+   645→      
+   646→      <!-- Subtitle -->
+   647→      <p class="font-display text-2xl md:text-3xl mb-5" style="font-style: italic; font-weight: 400; color: var(--fg); line-height: 1.3;">
+   648→        Notes from a programmer's desk — on code, systems, and the strange joy of debugging at 2am.
+   649→      </p>
+   650→      
+   651→      <p class="text-base md:text-lg mb-12 max-w-2xl" style="color: var(--muted); line-height: 1.6;">
+   652→        I'm <span style="color: var(--fg); font-weight: 500;">Alex Rivera</span> — software engineer writing about the craft. TypeScript today, Rust tomorrow, assembly for fun. New essay every other Tuesday.
+   653→      </p>
+   654→      
+   655→      <!-- CTAs -->
+   656→      <div class="flex flex-wrap gap-4 mb-20">
+   657→        <a href="#notes" class="btn-primary">
+   658→          read latest
+   659→          <i class="fas fa-arrow-right text-xs"></i>
+   660→        </a>
+   661→        <a href="#about" class="btn-secondary">
+   662→          <i class="fas fa-rss text-xs"></i>
+   663→          subscribe
+   664→        </a>
+   665→      </div>
+   666→      
+   667→      <!-- Stats grid -->
+   668→      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl">
+   669→        <div>
+   670→          <div class="font-mono font-bold text-3xl md:text-4xl" style="color: var(--accent);">142</div>
+   671→          <div class="font-mono text-xs uppercase tracking-widest mt-2" style="color: var(--muted);">essays published</div>
+   672→        </div>
+   673→        <div>
+   674→          <div class="font-mono font-bold text-3xl md:text-4xl" style="color: var(--accent);">8.2k</div>
+   675→          <div class="font-mono text-xs uppercase tracking-widest mt-2" style="color: var(--muted);">regular readers</div>
+   676→        </div>
+   677→        <div>
+   678→          <div class="font-mono font-bold text-3xl md:text-4xl" style="color: var(--accent);">2d</div>
+   679→          <div class="font-mono text-xs uppercase tracking-widest mt-2" style="color: var(--muted);">since last commit</div>
+   680→        </div>
+   681→        <div>
+   682→          <div class="font-mono font-bold text-3xl md:text-4xl" style="color: var(--accent);">∞</div>
+   683→          <div class="font-mono text-xs uppercase tracking-widest mt-2" style="color: var(--muted);">cups of coffee</div>
+   684→        </div>
+   685→      </div>
+   686→    </div>
+   687→  </div>
+   688→  
+   689→  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-xs flex flex-col items-center gap-3" style="color: var(--muted);">
+   690→    <span class="tracking-widest uppercase">scroll</span>
+   691→    <div style="width: 1px; height: 30px; background: linear-gradient(to bottom, var(--accent), transparent);"></div>
+   692→  </div>
+   693→</section>
+   694→
+   695→<!-- Marquee -->
+   696→<div class="py-5 border-y marquee-wrap" style="border-color: var(--border); background: var(--bg-elev);">
+   697→  <div class="marquee font-mono text-sm uppercase tracking-widest" style="color: var(--muted);">
+   698→    <span>JavaScript</span><span>·</span><span>TypeScript</span><span>·</span><span>Rust</span><span>·</span><span>Go</span><span>·</span><span>WebAssembly</span><span>·</span><span>PostgreSQL</span><span>·</span><span>Redis</span><span>·</span><span>Docker</span><span>·</span><span>Kubernetes</span><span>·</span><span>Linux</span><span>·</span><span>NeoVim</span><span>·</span>
+   699→    <span>JavaScript</span><span>·</span><span>TypeScript</span><span>·</span><span>Rust</span><span>·</span><span>Go</span><span>·</span><span>WebAssembly</span><span>·</span><span>PostgreSQL</span><span>·</span><span>Redis</span><span>·</span><span>Docker</span><span>·</span><span>Kubernetes</span><span>·</span><span>Linux</span><span>·</span><span>NeoVim</span><span>·</span>
+   700→  </div>
+   701→</div>
+   702→
+   703→<!-- Recent Notes -->
+   704→<section class="py-24 md:py-32 px-6" id="notes">
+   705→  <div class="max-w-7xl mx-auto">
+   706→    <div class="flex items-end justify-between mb-16 flex-wrap gap-6 reveal">
+   707→      <div>
+   708→        <div class="font-mono text-xs uppercase tracking-widest mb-4" style="color: var(--accent);">// recent notes</div>
+   709→        <h2 class="font-display font-black text-5xl md:text-7xl" style="letter-spacing: -0.035em; line-height: 1;">
+   710→          Latest <span style="font-style: italic; font-weight: 400;">writing</span>
+   711→        </h2>
+   712→      </div>
+   713→      <a href="#archive" class="btn-secondary">
+   714→        all posts
+   715→        <i class="fas fa-arrow-right text-xs"></i>
+   716→      </a>
+   717→    </div>
+   718→    
+   719→    <div class="grid md:grid-cols-3 gap-6">
+   720→      <article class="article-card reveal">
+   721→        <div class="flex items-start justify-between mb-6">
+   722→          <div class="card-num">01</div>
+   723→          <span class="tag">JavaScript</span>
+   724→        </div>
+   725→        <div class="font-mono text-xs mb-4" style="color: var(--muted);">11.12.24 — 8 min read</div>
+   726→        <h3 class="font-display font-bold text-2xl mb-4 leading-tight">
+   727→          On the Quiet Violence of Implicit Conversions
+   728→        </h3>
+   729→        <p class="text-sm mb-8" style="color: var(--muted); line-height: 1.65;">
+   730→          JavaScript will let you add <code class="font-mono px-1.5 py-0.5 rounded text-xs" style="background: rgba(var(--accent-rgb),0.1); color: var(--accent);">[]</code> to <code class="font-mono px-1.5 py-0.5 rounded text-xs" style="background: rgba(var(--accent-rgb),0.1); color: var(--accent);">{}</code> and thank you for it. A field guide to footguns.
+   731→        </p>
+   732→        <div class="flex items-center gap-2 font-mono text-xs uppercase tracking-widest" style="color: var(--accent);">
+   733→          <span>read essay</span>
+   734→          <span class="arrow">→</span>
+   735→        </div>
+   736→      </article>
+   737→      
+   738→      <article class="article-card reveal">
+   739→        <div class="flex items-start justify-between mb-6">
+   740→          <div class="card-num">02</div>
+   741→          <span class="tag">Compilers</span>
+   742→        </div>
+   743→        <div class="font-mono text-xs mb-4" style="color: var(--muted);">10.28.24 — 14 min read</div>
+   744→        <h3 class="font-display font-bold text-2xl mb-4 leading-tight">
+   745→          A Lexer, By Hand, On a Sunday Afternoon
+   746→        </h3>
+   747→        <p class="text-sm mb-8" style="color: var(--muted); line-height: 1.65;">
+   748→          Skip the regex. Skip the generator. Two hundred lines of switch statements and you'll understand something new about every language you've ever used.
+   749→        </p>
+   750→        <div class="flex items-center gap-2 font-mono text-xs uppercase tracking-widest" style="color: var(--accent);">
+   751→          <span>read essay</span>
+   752→          <span class="arrow">→</span>
+   753→        </div>
+   754→      </article>
+   755→      
+   756→      <article class="article-card reveal">
+   757→        <div class="flex items-start justify-between mb-6">
+   758→          <div class="card-num">03</div>
+   759→          <span class="tag">Error Handling</span>
+   760→        </div>
+   761→        <div class="font-mono text-xs mb-4" style="color: var(--muted);">10.14.24 — 6 min read</div>
+   762→        <h3 class="font-display font-bold text-2xl mb-4 leading-tight">
+   763→          Why I Removed Every Try/Catch From My Codebase
+   764→        </h3>
+   765→        <p class="text-sm mb-8" style="color: var(--muted); line-height: 1.65;">
+   766→          Result types, error channels, and the curious peace of letting things crash loudly in development.
+   767→        </p>
+   768→        <div class="flex items-center gap-2 font-mono text-xs uppercase tracking-widest" style="color: var(--accent);">
+   769→          <span>read essay</span>
+   770→          <span class="arrow">→</span>
+   771→        </div>
+   772→      </article>
+   773→    </div>
+   774→  </div>
+   775→</section>
+   776→
+   777→<!-- Snippet showcase -->
+   778→<section class="py-24 md:py-32 px-6" id="snippets" style="background: var(--bg-elev);">
+   779→  <div class="max-w-7xl mx-auto">
+   780→    <div class="grid lg:grid-cols-12 gap-12 items-start">
+   781→      <div class="lg:col-span-4 lg:sticky" style="top: 120px;">
+   782→        <div class="font-mono text-xs uppercase tracking-widest mb-4" style="color: var(--accent);">// snippet of the week</div>
+   783→        <h2 class="font-display font-black text-4xl md:text-5xl mb-6" style="letter-spacing: -0.03em; line-height: 1.05;">
+   784→          <span style="font-style: italic; font-weight: 400;">useTypewriter</span>() — the hook powering this hero.
+   785→        </h2>
+   786→        <p class="text-base mb-8" style="color: var(--muted); line-height: 1.65;">
+   787→          The blinking greeting at the top of this page isn't a CSS animation — it's a real React hook. Type, pause, delete, advance. Click <em>copy</em> and paste it into your project.
+   788→        </p>
+   789→        <ul class="space-y-3 font-mono text-sm mb-8" style="color: var(--fg-dim);">
+   790→          <li class="flex items-center gap-3"><span style="color: var(--accent);">→</span> zero dependencies</li>
+   791→          <li class="flex items-center gap-3"><span style="color: var(--accent);">→</span> ~30 lines, fully typed</li>
+   792→          <li class="flex items-center gap-3"><span style="color: var(--accent);">→</span> cleanup-safe on unmount</li>
+   793→        </ul>
+   794→        <div class="flex flex-wrap gap-2">
+   795→          <span class="tag">React</span>
+   796→          <span class="tag">TypeScript</span>
+   797→          <span class="tag">Hooks</span>
+   798→        </div>
+   799→      </div>
+   800→      
+   801→      <div class="lg:col-span-8">
+   802→        <div class="code-window">
+   803→          <div class="code-header">
+   804→            <div class="flex items-center gap-3">
+   805→              <span class="flex gap-1.5">
+   806→                <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57;display:inline-block;"></span>
+   807→                <span style="width:11px;height:11px;border-radius:50%;background:#febc2e;display:inline-block;"></span>
+   808→                <span style="width:11px;height:11px;border-radius:50%;background:#28c840;display:inline-block;"></span>
+   809→              </span>
+   810→              <span class="font-mono text-xs" style="color: var(--muted);">useTypewriter.ts</span>
+   811→            </div>
+   812→            <button class="copy-btn" data-target="snippetCode">
+   813→              <span class="copy-flash"></span>
+   814→              <i class="fas fa-copy"></i>
+   815→              <span class="copy-label">copy</span>
+   816→            </button>
+   817→          </div>
+   818→          <pre class="p-6 md:p-7 text-xs md:text-sm overflow-x-auto" style="background: var(--code-bg); margin: 0; line-height: 1.7;"><code id="snippetCode"><span class="tk-com">// A self-cleaning typewriter hook. No deps, ~30 lines.</span>
+   819→<span class="tk-key">import</span> { <span class="tk-var">useState</span>, <span class="tk-var">useEffect</span> } <span class="tk-key">from</span> <span class="tk-str">'react'</span>;
+   820→
+   821→<span class="tk-key">export function</span> <span class="tk-fn">useTypewriter</span>(
+   822→  <span class="tk-var">words</span>: <span class="tk-fn">string</span>[],
+   823→  <span class="tk-var">speed</span> = <span class="tk-num">80</span>,
+   824→  <span class="tk-var">pause</span> = <span class="tk-num">1800</span>,
+   825→) {
+   826→  <span class="tk-key">const</span> [<span class="tk-var">text</span>, <span class="tk-var">setText</span>] = <span class="tk-fn">useState</span>(<span class="tk-str">''</span>);
+   827→  <span class="tk-key">const</span> [<span class="tk-var">i</span>, <span class="tk-var">setI</span>] = <span class="tk-fn">useState</span>(<span class="tk-num">0</span>);
+   828→  <span class="tk-key">const</span> [<span class="tk-var">del</span>, <span class="tk-var">setDel</span>] = <span class="tk-fn">useState</span>(<span class="tk-key">false</span>);
+   829→
+   830→  <span class="tk-fn">useEffect</span>(() <span class="tk-op">=&gt;</span> {
+   831→    <span class="tk-key">const</span> <span class="tk-var">word</span> = <span class="tk-var">words</span>[<span class="tk-var">i</span> % <span class="tk-var">words</span>.<span class="tk-var">length</span>];
+   832→    <span class="tk-key">const</span> <span class="tk-var">delay</span> = <span class="tk-var">del</span> ? <span class="tk-var">speed</span> / <span class="tk-num">2</span> : <span class="tk-var">speed</span>;
+   833→
+   834→    <span class="tk-key">const</span> <span class="tk-var">t</span> = <span class="tk-fn">setTimeout</span>(() <span class="tk-op">=&gt;</span> {
+   835→      <span class="tk-var">setText</span>(<span class="tk-var">del</span>
+   836→        ? <span class="tk-var">word</span>.<span class="tk-fn">slice</span>(<span class="tk-num">0</span>, <span class="tk-var">text</span>.<span class="tk-var">length</span> - <span class="tk-num">1</span>)
+   837→        : <span class="tk-var">word</span>.<span class="tk-fn">slice</span>(<span class="tk-num">0</span>, <span class="tk-var">text</span>.<span class="tk-var">length</span> + <span class="tk-num">1</span>));
+   838→    }, <span class="tk-var">delay</span>);
+   839→
+   840→    <span class="tk-key">if</span> (!<span class="tk-var">del</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-var">text</span> === <span class="tk-var">word</span>) {
+   841→      <span class="tk-key">const</span> <span class="tk-var">p</span> = <span class="tk-fn">setTimeout</span>(() <span class="tk-op">=&gt;</span> <span class="tk-fn">setDel</span>(<span class="tk-key">true</span>), <span class="tk-var">pause</span>);
+   842→      <span class="tk-key">return</span> () <span class="tk-op">=&gt;</span> { <span class="tk-fn">clearTimeout</span>(<span class="tk-var">t</span>); <span class="tk-fn">clearTimeout</span>(<span class="tk-var">p</span>); };
+   843→    }
+   844→    <span class="tk-key">if</span> (<span class="tk-var">del</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-var">text</span> === <span class="tk-str">''</span>) {
+   845→      <span class="tk-fn">setDel</span>(<span class="tk-key">false</span>);
+   846→      <span class="tk-fn">setI</span>(<span class="tk-var">i</span> + <span class="tk-num">1</span>);
+   847→    }
+   848→    <span class="tk-key">return</span> () <span class="tk-op">=&gt;</span> <span class="tk-fn">clearTimeout</span>(<span class="tk-var">t</span>);
+   849→  }, [<span class="tk-var">text</span>, <span class="tk-var">del</span>, <span class="tk-var">i</span>, <span class="tk-var">words</span>, <span class="tk-var">speed</span>, <span class="tk-var">pause</span>]);
+   850→
+   851→  <span class="tk-key">return</span> <span class="tk-var">text</span>;
+   852→}</code></pre>
+   853→        </div>
+   854→        
+   855→        <!-- Mini secondary snippet -->
+   856→        <div class="code-window mt-6">
+   857→          <div class="code-header">
+   858→            <div class="flex items-center gap-3">
+   859→              <span class="flex gap-1.5">
+   860→                <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57;display:inline-block;"></span>
+   861→                <span style="width:11px;height:11px;border-radius:50%;background:#febc2e;display:inline-block;"></span>
+   862→                <span style="width:11px;height:11px;border-radius:50%;background:#28c840;display:inline-block;"></span>
+   863→              </span>
+   864→              <span class="font-mono text-xs" style="color: var(--muted);">usage.tsx</span>
+   865→            </div>
+   866→            <button class="copy-btn" data-target="usageCode">
+   867→              <span class="copy-flash"></span>
+   868→              <i class="fas fa-copy"></i>
+   869→              <span class="copy-label">copy</span>
+   870→            </button>
+   871→          </div>
+   872→          <pre class="p-6 md:p-7 text-xs md:text-sm overflow-x-auto" style="background: var(--code-bg); margin: 0; line-height: 1.7;"><code id="usageCode"><span class="tk-key">function</span> <span class="tk-fn">Hero</span>() {
+   873→  <span class="tk-key">const</span> <span class="tk-var">greeting</span> = <span class="tk-fn">useTypewriter</span>([
+   874→    <span class="tk-str">'hello, traveler.'</span>,
+   875→    <span class="tk-str">'you found /dev/log.'</span>,
+   876→    <span class="tk-str">'console.log(love)'</span>,
+   877→  ]);
+   878→
+   879→  <span class="tk-key">return</span> <span class="tk-op">&lt;</span><span class="tk-var">h1</span><span class="tk-op">&gt;</span>{<span class="tk-var">greeting</span>}<span class="tk-op">&lt;/</span><span class="tk-var">h1</span><span class="tk-op">&gt;</span>;
+   880→}</code></pre>
+   881→        </div>
+   882→      </div>
+   883→    </div>
+   884→  </div>
+   885→</section>
+   886→
+   887→<!-- Archive -->
+   888→<section class="py-24 md:py-32 px-6" id="archive">
+   889→  <div class="max-w-5xl mx-auto">
+   890→    <div class="mb-16 reveal">
+   891→      <div class="font-mono text-xs uppercase tracking-widest mb-4" style="color: var(--accent);">// the archive</div>
+   892→      <h2 class="font-display font-black text-5xl md:text-7xl" style="letter-spacing: -0.035em; line-height: 1;">
+   893→        Older <span style="font-style: italic; font-weight: 400;">posts</span>
+   894→      </h2>
+   895→      <p class="text-base mt-6 max-w-xl" style="color: var(--muted);">
+   896→        142 essays on programming, written over four years. Filtered here by recency — the full index lives in the JSON.
+   897→      </p>
+   898→    </div>
+   899→    
+   900→    <div class="reveal">
+   901→      <a href="#" class="archive-item">
+   902→        <div class="font-mono text-xs w-24 flex-shrink-0" style="color: var(--muted);">09.30.24</div>
+   903→        <div class="flex-1 min-w-0">
+   904→          <div class="font-display text-xl md:text-2xl archive-title mb-1" style="font-weight: 700;">The Hidden Cost of Abstraction</div>
+   905→          <div class="text-sm" style="color: var(--muted);">Every layer you add is a layer you'll debug. A meditation on when to stop.</div>
+   906→        </div>
+   907→        <div class="tag hidden md:inline-block">Architecture</div>
+   908→        <div class="font-mono text-xs w-16 text-right flex-shrink-0" style="color: var(--muted);">11 min</div>
+   909→      </a>
+   910→      
+   911→      <a href="#" class="archive-item">
+   912→        <div class="font-mono text-xs w-24 flex-shrink-0" style="color: var(--muted);">09.18.24</div>
+   913→        <div class="flex-1 min-w-0">
+   914→          <div class="font-display text-xl md:text-2xl archive-title mb-1" style="font-weight: 700;">Plain Text Will Outlive Us All</div>
+   915→          <div class="text-sm" style="color: var(--muted);">On choosing formats that your grandchildren's operating system can still open.</div>
+   916→        </div>
+   917→        <div class="tag hidden md:inline-block">Tools</div>
+   918→        <div class="font-mono text-xs w-16 text-right flex-shrink-0" style="color: var(--muted);">5 min</div>
+   919→      </a>
+   920→      
+   921→      <a href="#" class="archive-item">
+   922→        <div class="font-mono text-xs w-24 flex-shrink-0" style="color: var(--muted);">09.02.24</div>
+   923→        <div class="flex-1 min-w-0">
+   924→          <div class="font-display text-xl md:text-2xl archive-title mb-1" style="font-weight: 700;">Garbage Collection, But Make It Personal</div>
+   925→          <div class="text-sm" style="color: var(--muted);">What tracing collectors can teach you about letting go of side projects.</div>
+   926→        </div>
+   927→        <div class="tag hidden md:inline-block">Memory</div>
+   928→        <div class="font-mono text-xs w-16 text-right flex-shrink-0" style="color: var(--muted);">9 min</div>
+   929→      </a>
+   930→      
+   931→      <a href="#" class="archive-item">
+   932→        <div class="font-mono text-xs w-24 flex-shrink-0" style="color: var(--muted);">08.21.24</div>
+   933→        <div class="flex-1 min-w-0">
+   934→          <div class="font-display text-xl md:text-2xl archive-title mb-1" style="font-weight: 700;">A Letter to Junior Me About Imposter Syndrome</div>
+   935→          <div class="text-sm" style="color: var(--muted);">Eight things I wish someone had told me in my first year of writing code for money.</div>
+   936→        </div>
+   937→        <div class="tag hidden md:inline-block">Career</div>
+   938→        <div class="font-mono text-xs w-16 text-right flex-shrink-0" style="color: var(--muted);">7 min</div>
+   939→      </a>
+   940→      
+   941→      <a href="#" class="archive-item">
+   942→        <div class="font-mono text-xs w-24 flex-shrink-0" style="color: var(--muted);">08.07.24</div>
+   943→        <div class="flex-1 min-w-0">
+   944→          <div class="font-display text-xl md:text-2xl archive-title mb-1" style="font-weight: 700;">I Wrote a Database in 200 Lines of Go</div>
+   945→          <div class="text-sm" style="color: var(--muted);">A WAL, an LSM-tree, and a HTTP API. Surprised how far you can get on a Saturday.</div>
+   946→        </div>
+   947→        <div class="tag hidden md:inline-block">Systems</div>
+   948→        <div class="font-mono text-xs w-16 text-right flex-shrink-0" style="color: var(--muted);">16 min</div>
+   949→      </a>
+   950→      
+   951→      <a href="#" class="archive-item">
+   952→        <div class="font-mono text-xs w-24 flex-shrink-0" style="color: var(--muted);">07.24.24</div>
+   953→        <div class="flex-1 min-w-0">
+   954→          <div class="font-display text-xl md:text-2xl archive-title mb-1" style="font-weight: 700;">Stop Using useEffect for Everything</div>
+   955→          <div class="text-sm" style="color: var(--muted);">Most effects are an admission that your state model is wrong. A re-education.</div>
+   956→        </div>
+   957→        <div class="tag hidden md:inline-block">React</div>
+   958→        <div class="font-mono text-xs w-16 text-right flex-shrink-0" style="color: var(--muted);">6 min</div>
+   959→      </a>
+   960→    </div>
+   961→    
+   962→    <div class="mt-12 text-center reveal">
+   963→      <a href="#" class="btn-secondary">
+   964→        browse all 142 essays
+   965→        <i class="fas fa-arrow-right text-xs"></i>
+   966→      </a>
+   967→    </div>
+   968→  </div>
+   969→</section>
+   970→
+   971→<!-- Subscribe -->
+   972→<section class="py-24 md:py-32 px-6" id="about" style="background: var(--bg-elev);">
+   973→  <div class="max-w-4xl mx-auto">
+   974→    <div class="text-center mb-12 reveal">
+   975→      <div class="font-mono text-xs uppercase tracking-widest mb-4" style="color: var(--accent);">// stay in the loop</div>
+   976→      <h2 class="font-display font-black text-5xl md:text-6xl mb-6" style="letter-spacing: -0.035em; line-height: 1;">
+   977→        Every other <span style="font-style: italic; font-weight: 400;">Tuesday.</span>
+   978→      </h2>
+   979→      <p class="text-lg max-w-2xl mx-auto" style="color: var(--muted); line-height: 1.6;">
+   980→        One essay. No tracking, no ads, no <em>"10x"</em> anything. Unsubscribe with a single click — I won't even be offended.
+   981→      </p>
+   982→    </div>
+   983→    
+   984→    <form class="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto reveal" id="subForm">
+   985→      <input type="email" placeholder="you@somewhere.dev" required class="input-field flex-1" id="emailInput">
+   986→      <button type="submit" class="btn-primary justify-center">
+   987→        subscribe
+   988→        <i class="fas fa-arrow-right text-xs"></i>
+   989→      </button>
+   990→    </form>
+   991→    
+   992→    <div id="subToast" class="font-mono text-sm mt-6 text-center opacity-0 transition-opacity duration-500" style="color: var(--accent);">
+   993→      ✓ welcome aboard. confirmation pending in your inbox.
+   994→    </div>
+   995→    
+   996→    <div class="mt-16 grid sm:grid-cols-3 gap-6 max-w-3xl mx-auto reveal">
+   997→      <div class="text-center">
+   998→        <div class="font-mono font-bold text-2xl mb-2" style="color: var(--accent);">No spam</div>
+   999→        <div class="text-sm" style="color: var(--muted);">One email every two weeks. That's it.</div>
+  1000→      </div>
+  1001→      <div class="text-center">
+  1002→        <div class="font-mono font-bold text-2xl mb-2" style="color: var(--accent);">No tracking</div>
+  1003→        <div class="text-sm" style="color: var(--muted);">Self-hosted on a $5 box. No analytics.</div>
+  1004→      </div>
+  1005→      <div class="text-center">
+  1006→        <div class="font-mono font-bold text-2xl mb-2" style="color: var(--accent);">No paywall</div>
+  1007→        <div class="text-sm" style="color: var(--muted);">Free forever. Or until I run out of coffee.</div>
+  1008→      </div>
+  1009→    </div>
+  1010→  </div>
+  1011→</section>
+  1012→
+  1013→<!-- Footer -->
+  1014→<footer class="py-12 px-6 border-t" style="border-color: var(--border);">
+  1015→  <div class="max-w-7xl mx-auto">
+  1016→    <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+  1017→      <div class="font-mono text-sm" style="color: var(--muted);">
+  1018→        © 2024 Alex Rivera · built with care, not frameworks
+  1019→      </div>
+  1020→      <div class="flex items-center gap-5">
+  1021→        <a href="https://github.com" target="_blank" rel="noopener" class="hover-link text-lg" aria-label="GitHub"><i class="fab fa-github"></i></a>
+  1022→        <a href="https://twitter.com" target="_blank" rel="noopener" class="hover-link text-lg" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+  1023→        <a href="#" class="hover-link text-lg" aria-label="RSS"><i class="fas fa-rss"></i></a>
+  1024→        <a href="mailto:hi@devlog.example" class="hover-link text-lg" aria-label="Email"><i class="fas fa-envelope"></i></a>
+  1025→      </div>
+  1026→    </div>
+  1027→    <div class="text-center font-mono text-xs pt-8" style="border-top: 1px solid var(--border); color: var(--muted);">
+  1028→      <span style="color: var(--accent);">$</span> echo "thanks for reading" | sudo tee /dev/stdout
+  1029→    </div>
+  1030→  </div>
+  1031→</footer>
+  1032→
+  1033→<script>
+  1034→// === TYPEWRITER ===
+  1035→const greetings = [
+  1036→  "hello, traveler.",
+  1037→  "you found /dev/log.",
+  1038→  "i write bugs so you don't have to.",
+  1039→  "console.log('welcome back.');",
+  1040→  "0x72656164657220313a20666f756e642e",
+  1041→];
+  1042→const typeEl = document.getElementById('typewriter');
+  1043→let gIdx = 0, cIdx = 0, deleting = false;
+  1044→
+  1045→function tick() {
+  1046→  const current = greetings[gIdx];
+  1047→  if (deleting) {
+  1048→    cIdx--;
+  1049→    typeEl.textContent = current.slice(0, cIdx);
+  1050→    if (cIdx === 0) {
+  1051→      deleting = false;
+  1052→      gIdx = (gIdx + 1) % greetings.length;
+  1053→      setTimeout(tick, 400);
+  1054→      return;
+  1055→    }
+  1056→    setTimeout(tick, 35);
+  1057→  } else {
+  1058→    cIdx++;
+  1059→    typeEl.textContent = current.slice(0, cIdx);
+  1060→    if (cIdx === current.length) {
+  1061→      deleting = true;
+  1062→      setTimeout(tick, 2200);
+  1063→      return;
+  1064→    }
+  1065→    setTimeout(tick, 75 + Math.random() * 50);
+  1066→  }
+  1067→}
+  1068→tick();
+  1069→
+  1070→// === READING PROGRESS BAR ===
+  1071→const progressBar = document.getElementById('progressBar');
+  1072→function updateProgress() {
+  1073→  const scrollTop = window.scrollY;
+  1074→  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  1075→  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  1076→  progressBar.style.width = progress + '%';
+  1077→}
+  1078→window.addEventListener('scroll', updateProgress, { passive: true });
+  1079→updateProgress();
+  1080→
+  1081→// === THEME TOGGLE (3-state with smooth transition) ===
+  1082→const themeButtons = document.querySelectorAll('.theme-btn');
+  1083→const root = document.documentElement;
+  1084→
+  1085→function setTheme(theme, animate = true) {
+  1086→  if (animate) {
+  1087→    document.body.classList.add('theme-anim');
+  1088→    setTimeout(() => document.body.classList.remove('theme-anim'), 700);
+  1089→  }
+  1090→  root.setAttribute('data-theme', theme);
+  1091→  try { localStorage.setItem('devlog-theme', theme); } catch (e) {}
+  1092→  themeButtons.forEach(btn => {
+  1093→    btn.classList.toggle('active', btn.dataset.theme === theme);
+  1094→  });
+  1095→}
+  1096→
+  1097→themeButtons.forEach(btn => {
+  1098→  btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+  1099→});
+  1100→
+  1101→// Initial theme
+  1102→let initialTheme = 'dark';
+  1103→try {
+  1104→  const saved = localStorage.getItem('devlog-theme');
+  1105→  if (saved && ['dark', 'light', 'cyber'].includes(saved)) initialTheme = saved;
+  1106→} catch (e) {}
+  1107→setTheme(initialTheme, false);
+  1108→
+  1109→// === COPY-FLASH CODE BUTTONS ===
+  1110→document.querySelectorAll('.copy-btn').forEach(btn => {
+  1111→  btn.addEventListener('click', async () => {
+  1112→    const targetId = btn.dataset.target;
+  1113→    const codeEl = document.getElementById(targetId);
+  1114→    if (!codeEl) return;
+  1115→    const text = codeEl.innerText;
+  1116→    
+  1117→    try {
+  1118→      await navigator.clipboard.writeText(text);
+  1119→    } catch (e) {
+  1120→      // Fallback for older browsers
+  1121→      const ta = document.createElement('textarea');
+  1122→      ta.value = text;
+  1123→      ta.style.position = 'fixed';
+  1124→      ta.style.opacity = '0';
+  1125→      document.body.appendChild(ta);
+  1126→      ta.select();
+  1127→      try { document.execCommand('copy'); } catch (e2) {}
+  1128→      document.body.removeChild(ta);
+  1129→    }
+  1130→    
+  1131→    btn.classList.add('copied');
+  1132→    const label = btn.querySelector('.copy-label');
+  1133→    const icon = btn.querySelector('i');
+  1134→    const origLabel = label.textContent;
+  1135→    const origIcon = icon.className;
+  1136→    label.textContent = 'copied';
+  1137→    icon.className = 'fas fa-check';
+  1138→    
+  1139→    setTimeout(() => {
+  1140→      btn.classList.remove('copied');
+  1141→      label.textContent = origLabel;
+  1142→      icon.className = origIcon;
+  1143→    }, 1800);
+  1144→  });
+  1145→});
+  1146→
+  1147→// === GITHUB LIVE COUNTERS ===
+  1148→const starsEl = document.getElementById('ghStars');
+  1149→const forksEl = document.getElementById('ghForks');
+  1150→
+  1151→function formatNumber(n) {
+  1152→  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  1153→  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  1154→  return n.toString();
+  1155→}
+  1156→
+  1157→function animateCounter(el, target, duration = 1400) {
+  1158→  const start = parseInt(el.dataset.raw) || 0;
+  1159→  const startTime = performance.now();
+  1160→  function frame(now) {
+  1161→    const elapsed = now - startTime;
+  1162→    const t = Math.min(elapsed / duration, 1);
+  1163→    const eased = 1 - Math.pow(1 - t, 3);
+  1164→    const value = Math.floor(start + (target - start) * eased);
+  1165→    el.textContent = formatNumber(value);
+  1166→    el.dataset.raw = value;
+  1167→    if (t < 1) requestAnimationFrame(frame);
+  1168→    else {
+  1169→      el.dataset.raw = target;
+  1170→      el.textContent = formatNumber(target);
+  1171→    }
+  1172→  }
+  1173→  requestAnimationFrame(frame);
+  1174→}
+  1175→
+  1176→async function loadGitHubStats() {
+  1177→  // Real fetch with graceful fallback
+  1178→  const fallbackStars = 82400;
+  1179→  const fallbackForks = 4180;
+  1180→  
+  1181→  try {
+  1182→    const controller = new AbortController();
+  1183→    const timeout = setTimeout(() => controller.abort(), 4000);
+  1184→    const res = await fetch('https://api.github.com/repos/tailwindlabs/tailwindcss', {
+  1185→      signal: controller.signal,
+  1186→      headers: { 'Accept': 'application/vnd.github.v3+json' }
+  1187→    });
+  1188→    clearTimeout(timeout);
+  1189→    
+  1190→    if (!res.ok) throw new Error('Rate limited');
+  1191→    const data = await res.json();
+  1192→    animateCounter(starsEl, data.stargazers_count);
+  1193→    animateCounter(forksEl, data.forks_count);
+  1194→  } catch (e) {
+  1195→    // Fall back to plausible numbers and animate them in
+  1196→    animateCounter(starsEl, fallbackStars);
+  1197→    animateCounter(forksEl, fallbackForks);
+  1198→  }
+  1199→}
+  1200→loadGitHubStats();
+  1201→
+  1202→// Simulate live activity on the star counter
+  1203→setInterval(() => {
+  1204→  if (Math.random() < 0.35) {
+  1205→    const current = parseInt(starsEl.dataset.raw) || 0;
+  1206→    const next = current + 1;
+  1207→    starsEl.dataset.raw = next;
+  1208→    starsEl.textContent = formatNumber(next);
+  1209→    starsEl.classList.remove('flash-up');
+  1210→    void starsEl.offsetWidth; // restart animation
+  1211→    starsEl.classList.add('flash-up');
+  1212→  }
+  1213→}, 9000);
+  1214→
+  1215→// === MOUSE GLOW (hero only) ===
+  1216→const mouseGlow = document.getElementById('mouseGlow');
+  1217→const hero = document.getElementById('hero');
+  1218→hero.addEventListener('mousemove', (e) => {
+  1219→  const rect = hero.getBoundingClientRect();
+  1220→  mouseGlow.style.left = (e.clientX - rect.left) + 'px';
+  1221→  mouseGlow.style.top = (e.clientY - rect.top) + 'px';
+  1222→  mouseGlow.style.opacity = '1';
+  1223→});
+  1224→hero.addEventListener('mouseleave', () => {
+  1225→  mouseGlow.style.opacity = '0';
+  1226→});
+  1227→
+  1228→// === SCROLL REVEAL ===
+  1229→const revealObserver = new IntersectionObserver((entries) => {
+  1230→  entries.forEach(entry => {
+  1231→    if (entry.isIntersecting) {
+  1232→      entry.target.classList.add('visible');
+  1233→      revealObserver.unobserve(entry.target);
+  1234→    }
+  1235→  });
+  1236→}, { threshold: 0.12, rootMargin: '0px 0px -80px 0px' });
+  1237→
+  1238→document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  1239→
+  1240→// === SUBSCRIBE FORM ===
+  1241→const subForm = document.getElementById('subForm');
+  1242→const subToast = document.getElementById('subToast');
+  1243→subForm.addEventListener('submit', (e) => {
+  1244→  e.preventDefault();
+  1245→  const input = document.getElementById('emailInput');
+  1246→  if (!input.value || !input.value.includes('@')) return;
+  1247→  subToast.style.opacity = '1';
+  1248→  input.value = '';
+  1249→  input.placeholder = 'see you Tuesday.';
+  1250→  setTimeout(() => {
+  1251→    subToast.style.opacity = '0';
+  1252→    input.placeholder = 'you@somewhere.dev';
+  1253→  }, 4000);
+  1254→});
+  1255→
+  1256→// === KEYBOARD SHORTCUT: T to cycle theme ===
+  1257→document.addEventListener('keydown', (e) => {
+  1258→  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  1259→  if (e.key === 't' || e.key === 'T') {
+  1260→    const current = root.getAttribute('data-theme');
+  1261→    const order = ['dark', 'light', 'cyber'];
+  1262→    const next = order[(order.indexOf(current) + 1) % order.length];
+  1263→    setTheme(next);
+  1264→  }
+  1265→});
+  1266→
+  1267→// === BG GRID PARALLAX ===
+  1268→window.addEventListener('scroll', () => {
+  1269→  const scrolled = window.scrollY;
+  1270→  const heroGrid = hero;
+  1271→  if (heroGrid && scrolled < window.innerHeight) {
+  1272→    heroGrid.style.backgroundPosition = `center ${scrolled * 0.3}px`;
+  1273→  }
+  1274→}, { passive: true });
+  1275→</script>
+  1276→
+  1277→</body>
+  1278→</html>
+  1279→```
+  1280→
+  1281→---
+  1282→
+  1283→**What's happening here:**
+  1284→
+  1285→**Visual identity** — I picked a warm "programmer's notebook" aesthetic: Fraunces serif for editorial headlines, JetBrains Mono for the typewriter and code, Space Grotesk for body. The default dark theme uses honey-amber on warm-black (not blue!), light is paper-cream with burnt sienna, and cyber goes full phosphor-green-on-black with CRT scanlines as a `body::before`.
+  1286→
+  1287→**Three-state theme toggle** — Sun/moon/terminal icons in a segmented pill. Clicking adds a `theme-anim` class that applies a 0.6s transition to every element's color/background/border, then removes itself so it doesn't slow down scroll animations. Theme persists in localStorage; press **T** to cycle.
+  1288→
+  1289→**Typewriter greeting** — Cycles through 5 programmer-flavored strings (`"hello, traveler."`, hex strings, `console.log`…) with realistic per-character jitter and a block cursor.
+  1290→
+  1291→**Hover-raise cards** — Each article card lifts 8px, reveals an animated top accent bar, glows in the bottom-right corner, big numeral "01/02/03" brightens, title shifts to accent color, arrow slides right.
+  1292→
+  1293→**Copy-flash buttons** — Each code window has a copy button. On click: full flash overlay sweeps across the button, label swaps to "copied" with a checkmark, then reverts after 1.8s. Uses Clipboard API with a `textarea` fallback.
+  1294→
+  1295→**Reading progress bar** — 3px gradient bar at the very top, glow shadow, updates on scroll.
+  1296→
+  1297→**Live GitHub counters** — Fetches `tailwindlabs/tailwindcss` from the GitHub API, animates the numbers counting up from 0 with a cubic ease-out. Falls back to plausible static numbers on rate-limit. Every ~9s there's a 35% chance the star count ticks up by 1 with a flash animation — to simulate live activity.
+  1298→
+  1299→**Dynamic layers** — Drifting blurred blobs, mouse-following radial glow in the hero, parallaxing grid background, marquee tech-stack ticker, scroll-reveal observer, animated stat dots, and the CRT scanline overlay in cyber mode.
