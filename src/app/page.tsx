@@ -526,14 +526,14 @@ export default function Home() {
               </a>
             ))}
             <a
-              href="https://github.com/microsoft/playwright"
+              href="https://github.com/mirzubairhameed"
               target="_blank"
               rel="noopener noreferrer"
               className="hover-link inline-flex items-center gap-1.5"
-              aria-label="Featured repository on GitHub"
+              aria-label="GitHub profile — mirzubairhameed"
             >
               <Github size={15} aria-hidden="true" />
-              repo
+              github
             </a>
           </div>
 

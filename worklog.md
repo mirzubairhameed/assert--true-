@@ -23,3 +23,19 @@ Stage Summary:
 - All 6 requested features implemented and browser-verified
 - Vercel-friendly: no DB, no server-only deps, next/font self-hosted fonts, GitHub API client-side with graceful fallback
 - Branding: assert(true) — Notes from a QA Engineer's Desk; themes: Night Run / Paper Trail / Phosphor
+
+---
+Task ID: 2
+Agent: main (Super Z)
+Task: Replace GitHub links with user's own profile (https://github.com/mirzubairhameed)
+
+Work Log:
+- GitHub API rate-limited from sandbox IP; scraped profile HTML instead — profile exists with repos: network-traffic-analyzer, my-resume, Basic-PenTest (all currently 0 stars / 0 forks)
+- Updated src/components/blog/github-stats.tsx REPO config: owner=mirzubairhameed, name=network-traffic-analyzer (featured repo for live counters), url=profile link, fallback values set to real 0/0
+- All 4 GitHub anchors (nav pill, hero stars, hero forks, footer) now point to https://github.com/mirzubairhameed
+- Updated footer link label to "github" with aria-label "GitHub profile — mirzubairhameed"
+- Lint clean; browser-verified: all anchors resolve to profile URL, counters render honest 0/0, no console errors
+
+Stage Summary:
+- Counters now track the user's own repo live and will grow as it gains stars
+- Every GitHub link on the site points to the user's profile

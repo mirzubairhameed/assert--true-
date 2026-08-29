@@ -4,16 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import { GitFork, Star } from "lucide-react";
 
 /**
- * Repo featured on the live counters. Swap owner/name to feature
- * any repository — the UI falls back to the cached numbers below
- * whenever the public GitHub API is rate-limited or unreachable.
+ * Repo featured on the live counters, and the GitHub profile every
+ * GitHub link points to. Swap `name` to feature a different repo —
+ * counters stay honest with the repo's real numbers and fall back
+ * to the cached values whenever the public GitHub API is
+ * rate-limited or unreachable.
  */
 export const REPO = {
-  owner: "microsoft",
-  name: "playwright",
-  url: "https://github.com/microsoft/playwright",
-  fallbackStars: 88000,
-  fallbackForks: 5300,
+  owner: "mirzubairhameed",
+  name: "network-traffic-analyzer",
+  url: "https://github.com/mirzubairhameed",
+  repoUrl: "https://github.com/mirzubairhameed/network-traffic-analyzer",
+  fallbackStars: 0,
+  fallbackForks: 0,
 };
 
 interface GhStats {
