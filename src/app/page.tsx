@@ -248,7 +248,7 @@ export default function Home() {
             aria-hidden="true"
           />
 
-          <div className="relative mx-auto grid w-full max-w-6xl gap-14 px-6 lg:grid-cols-[1.35fr_1fr] lg:items-center">
+          <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 gap-14 px-6 lg:grid-cols-[1.35fr_1fr] lg:items-center">
             <div>
               <p className="mb-7 font-mono text-xs tracking-[0.18em] text-[var(--muted)]">
                 {"// software quality assurance — field notes from the test trenches"}
@@ -365,7 +365,7 @@ export default function Home() {
                 </button>
               </div>
             ) : (
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {filtered.map((post) => (
                   <div key={post.id} className="reveal">
                     <ArticleCard post={post} onOpen={setOpenPost} />
@@ -392,7 +392,7 @@ export default function Home() {
               />
             </div>
 
-            <div className="grid gap-8 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
               <div className="reveal">
                 <p className="mb-2 font-mono text-[0.7rem] uppercase tracking-[0.16em]" style={{ color: "var(--accent)" }}>
                   react hook
@@ -505,7 +505,7 @@ export default function Home() {
           aria-label="About the author"
         >
           <div className="mx-auto max-w-6xl px-6">
-            <div className="grid gap-12 lg:grid-cols-[1.3fr_1fr]">
+            <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.3fr_1fr]">
               <div className="reveal">
                 <SectionHeader
                   eyebrow={"// 04 — about"}
@@ -589,7 +589,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="flex items-center gap-6 font-mono text-[0.78rem]">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[0.78rem]">
             {NAV_LINKS.map((l) => (
               <a key={l.href} href={l.href} className="hover-link">
                 {l.label}

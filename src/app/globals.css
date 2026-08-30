@@ -435,6 +435,7 @@ html[data-theme="cyber"] body::after {
 .copy-btn {
   position: relative;
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 0.4rem;
   font-family: var(--font-mono);

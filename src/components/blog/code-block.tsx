@@ -20,13 +20,13 @@ export function CodeBlock({ code, lang, label }: CodeBlockProps) {
   return (
     <figure className="code-shell my-6">
       <figcaption className="code-head">
-        <span className="inline-flex items-center gap-3">
-          <span className="code-dots" aria-hidden="true">
+        <span className="inline-flex min-w-0 items-center gap-3">
+          <span className="code-dots shrink-0" aria-hidden="true">
             <span />
             <span />
             <span />
           </span>
-          <span className="code-lang">{label ?? lang}</span>
+          <span className="code-lang truncate">{label ?? lang}</span>
         </span>
         <CopyButton getText={() => code} />
       </figcaption>
