@@ -55,7 +55,7 @@ export function ArticleModal({ post, onClose }: ArticleModalProps) {
                 <span className="font-mono text-xs text-[var(--muted)]">#{post.num}</span>
                 <StatusChip status={post.status} />
                 <span className="font-mono text-[0.7rem] text-[var(--muted)]">
-                  {post.date} · {post.read} read
+                  {post.category} · {post.difficulty} · {post.date} · {post.read} read
                 </span>
               </div>
               <h2

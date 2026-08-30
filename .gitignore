@@ -69,3 +69,7 @@ server.log
 verify-*.png
 Caddyfile
 agent-ctx/
+
+# sandbox extras
+skills/
+.env

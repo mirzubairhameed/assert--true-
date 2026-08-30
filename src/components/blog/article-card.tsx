@@ -98,6 +98,22 @@ export function ArticleCard({ post, onOpen }: ArticleCardProps) {
       <p className="mb-6 flex-1 text-[0.9rem] leading-[1.75] text-[var(--fg-dim)]">{post.dek}</p>
 
       <div className="mb-5 flex flex-wrap gap-2">
+        <span
+          className="rounded-md px-2 py-0.5 font-mono text-[0.65rem]"
+          style={{ border: "1px solid var(--accent)", color: "var(--accent)" }}
+        >
+          {post.category}
+        </span>
+        <span
+          className="rounded-md px-2 py-0.5 font-mono text-[0.65rem]"
+          style={{
+            border: "1px solid var(--border)",
+            color: "var(--fg-dim)",
+            background: "var(--bg-elev)",
+          }}
+        >
+          {post.difficulty}
+        </span>
         {post.tags.map((tag) => (
           <span
             key={tag}

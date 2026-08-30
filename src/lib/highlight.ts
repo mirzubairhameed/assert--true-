@@ -25,6 +25,23 @@ const KEYWORDS: Record<string, string[]> = {
     "if", "then", "else", "fi", "for", "in", "do", "done", "while", "case",
     "esac", "function", "return", "export", "local", "echo", "exit",
   ],
+  sql: [
+    "SELECT", "FROM", "WHERE", "INSERT", "INTO", "VALUES", "UPDATE", "SET",
+    "DELETE", "JOIN", "LEFT", "RIGHT", "FULL", "INNER", "OUTER", "CROSS", "ON",
+    "GROUP", "BY", "ORDER", "HAVING", "LIMIT", "OFFSET", "AND", "OR", "NOT",
+    "NULL", "IS", "IN", "BETWEEN", "LIKE", "AS", "DISTINCT", "COUNT", "SUM",
+    "AVG", "MIN", "MAX", "CREATE", "TABLE", "PRIMARY", "FOREIGN", "KEY",
+    "REFERENCES", "BEGIN", "COMMIT", "ROLLBACK", "UNIQUE", "DEFAULT", "ASC",
+    "DESC", "EXISTS", "CASE", "WHEN", "THEN", "ELSE", "END", "UNION", "WITH",
+  ],
+  java: [
+    "import", "package", "public", "private", "protected", "class", "interface",
+    "extends", "implements", "static", "final", "void", "new", "return", "if",
+    "else", "for", "while", "do", "switch", "case", "break", "continue", "try",
+    "catch", "finally", "throw", "throws", "this", "super", "null", "true",
+    "false", "int", "long", "double", "float", "boolean", "char", "String", "var",
+  ],
+  json: [],
 };
 
 const CONSTANTS = new Set([
@@ -41,6 +58,9 @@ function buildRegex(lang: string): RegExp {
   }
   if (hashComment) {
     parts.push("#[^\\n]*"); // hash comment
+  }
+  if (lang === "sql") {
+    parts.push("--[^\\n]*"); // SQL line comment
   }
   // strings: double, single, template
   parts.push("\"(?:[^\"\\\\\\n]|\\\\.)*\"");

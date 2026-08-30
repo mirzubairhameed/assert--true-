@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -10,7 +10,7 @@ import {
   SkipForward,
   TerminalSquare,
 } from "lucide-react";
-import { ARCHIVE_DRAFTS, POSTS, type Post } from "@/data/posts";
+import { ARCHIVE_DRAFTS, CATEGORIES, POSTS, type Post } from "@/data/posts";
 import { ProgressBar } from "@/components/blog/progress-bar";
 import { Typewriter } from "@/components/blog/typewriter";
 import { ThemeToggle } from "@/components/blog/theme-toggle";
@@ -163,6 +163,19 @@ function LatestRunCard() {
 
 export default function Home() {
   const [openPost, setOpenPost] = useState<Post | null>(null);
+  const [activeCat, setActiveCat] = useState<string>("all");
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return POSTS.filter((p) => {
+      if (activeCat !== "all" && p.category !== activeCat) return false;
+      if (!q) return true;
+      const haystack =
+        p.title + " " + p.dek + " " + p.category + " " + p.difficulty + " " + p.tags.join(" ") + " #" + p.num;
+      return haystack.toLowerCase().includes(q);
+    });
+  }, [activeCat, query]);
 
   useEffect(() => {
     const els = document.querySelectorAll(".reveal");
@@ -179,7 +192,7 @@ export default function Home() {
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, [activeCat, query]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -290,19 +303,76 @@ export default function Home() {
           <div className="mx-auto max-w-6xl px-6">
             <div className="reveal">
               <SectionHeader
-                eyebrow={"// 01 — field notes"}
-                title="Notes from the desk"
-                dek="Long-form posts on the craft of quality — each one argued with a real pipeline before it earned a number. Click any card to read it here, no new tab required."
+                eyebrow={"// 01 — qa learning library"}
+                title="The QA learning library"
+                dek="One hundred practical notes that walk you from your first test case through bugs, Agile, APIs, SQL, automation, Playwright and Cypress, CI/CD, and interview prep. Pick a shelf below, or search the whole desk."
               />
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {POSTS.map((post) => (
-                <div key={post.id} className="reveal">
-                  <ArticleCard post={post} onOpen={setOpenPost} />
-                </div>
-              ))}
+            <div className="reveal mb-10 flex flex-col gap-4">
+              <div className="flex flex-wrap items-center gap-2">
+                {["all", ...CATEGORIES].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setActiveCat(c)}
+                    aria-pressed={activeCat === c}
+                    className="rounded-md px-3 py-1.5 font-mono text-[0.72rem] transition-colors"
+                    style={
+                      activeCat === c
+                        ? { background: "var(--accent)", color: "var(--bg)", border: "1px solid var(--accent)" }
+                        : { border: "1px solid var(--border)", color: "var(--fg-dim)", background: "var(--bg-elev)" }
+                    }
+                  >
+                    {c === "all" ? "all notes" : c}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="search the library — try severity, waits, or interview"
+                  aria-label="Search the QA learning library"
+                  className="w-full max-w-md rounded-lg px-4 py-2.5 font-mono text-[0.82rem] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
+                  style={{ border: "1px solid var(--border)", background: "var(--bg-elev)", color: "var(--fg)" }}
+                />
+                <span className="font-mono text-[0.7rem] text-[var(--muted)]">
+                  {filtered.length} / {POSTS.length} notes
+                </span>
+              </div>
             </div>
+
+            {filtered.length === 0 ? (
+              <div
+                className="reveal rounded-2xl px-6 py-14 text-center"
+                style={{ border: "1px solid var(--border)" }}
+              >
+                <p className="font-mono text-sm text-[var(--fg-dim)]">
+                  no notes match <span style={{ color: "var(--accent)" }}>{query}</span> on this shelf
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setActiveCat("all");
+                  }}
+                  className="mt-5 rounded-md px-4 py-2 font-mono text-[0.75rem]"
+                  style={{ border: "1px solid var(--border)", color: "var(--fg-dim)", background: "var(--bg-elev)" }}
+                >
+                  clear filters
+                </button>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {filtered.map((post) => (
+                  <div key={post.id} className="reveal">
+                    <ArticleCard post={post} onOpen={setOpenPost} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
